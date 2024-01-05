@@ -9,3 +9,6 @@ df = pd.DataFrame({'col1': [1,2,3]})
 df
 
 uploaded_file = st.file_uploader("ログをアップロードしてください。")
+
+st.balloons()
+st.snow()

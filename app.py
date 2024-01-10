@@ -78,20 +78,6 @@ def check_item(text):
     return False
 
 CN_DATE = 'date' # 日付
-CN_NAP_COUNT = 'nap_count' # 昼寝回数
-CN_NAP_MINUTE = 'nap_minute' # 昼寝時間
-CN_NIGHT_SLEEP_COUNT = 'night_sleep_count' # 夜寝回数
-CN_NIGHT_SLEEP_MINUTE = 'night_sleep_minute' # 夜寝時間
-CN_NIGHT_WAKEUP_COUNT = 'night_wakeup_count' # 夜に起きる回数
-CN_NIGHT_WAKEUP_MINUTE = 'night_wakeup_minute' # 夜に起きている時間
-CN_MILK_COUNT = 'milk_count' # ミルク回数
-CN_MILK_ML = 'milk_ml' # ミルク量
-CN_BREASTFEEDING_COUNT  = 'breastfeeding_count' # 授乳回数
-CN_BREASTFEEDING_MINUTE = 'breastfeeding_minute' # 授乳時間
-CN_BABY_FOOD_COUNT = 'baby_food_count' # 離乳食回数
-CN_BABY_FOOD_MINUTE = 'baby_food_minute' # 離乳食時間
-CN_AGE_OF_MONTH = 'age_of_month' # 月齢
-
 
 uploaded_file = st.file_uploader("ログをアップロードしてください。")
 if uploaded_file is not None:

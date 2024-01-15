@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import re
 import datetime
 from datetime import timedelta
@@ -67,7 +68,7 @@ def get_piyolog_all_items(data):
                 record_timespan = record_time
                         
             # 記録
-            all_items.append([day_date, record_dt, record_type, record_subtype, record_timespan, record_value])
+            all_items.append([day_date, record_dt, record_type, record_subtype, record_value])
 
     return all_items
 
@@ -94,6 +95,17 @@ if uploaded_file is not None:
     st.markdown('### アップロードファイル（先頭1000文字）')
     st.write(string_data[:1000])
     
-    df = pd.DataFrame(get_piyolog_all_items(string_data),columns=[CN_DATE, '日時','分類','項目','時間','ミルク量'])
+    df = pd.DataFrame(get_piyolog_all_items(string_data),columns=['日付','日時','分類','項目','ミルク量'])
     st.markdown('### アップロードファイル(dataframe）')
     df
+
+    # meal_data = df[df['分類'] == '食事']
+    
+    st.markdown('### ミルク量の時間経過グラフ')
+    # グラフの描画
+    fig, ax = plt.subplots()
+    ax.plot(df['日時'], df['ミルク量'], marker='o')
+    ax.set_title('Milk Volume Over Time')
+    ax.set_xlabel('date time')
+    ax.set_ylabel('milk(ml)')
+    st.pyplot(fig)

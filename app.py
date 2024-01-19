@@ -79,51 +79,48 @@ def check_item(text):
         return True
     return False
 
-# uploaded_file = st.file_uploader("ログをアップロードしてください。")
-# if uploaded_file is not None:
-st.balloons()
-st.snow()
-# To read file as bytes:
-# bytes_data = uploaded_file.getvalue()
+uploaded_file = st.file_uploader("ログをアップロードしてください。")
+if uploaded_file is not None:
+    st.balloons()
+    
+    # To convert to a string based IO:
+    stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+    # stringio = open("sample_file.txt", "r", encoding="utf-8")  # ローカルのサンプルファイル
 
-# To convert to a string based IO:
-# stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-stringio = open("テキスト.txt", "r", encoding="utf-8")
+    # To read file as string:
+    string_data = stringio.read()
+    # st.markdown('### アップロードファイル（先頭1000文字）')
+    # st.write(string_data[:1000])
 
-# To read file as string:
-string_data = stringio.read()
-st.markdown('### アップロードファイル（先頭1000文字）')
-# st.write(string_data[:1000])
+    df = pd.DataFrame(get_piyolog_all_items(string_data),columns=['日付','日時','分類','項目','ミルク量'])
+    st.markdown('### アップロードファイル')
+    df
 
-df = pd.DataFrame(get_piyolog_all_items(string_data),columns=['日付','日時','分類','項目','ミルク量'])
-st.markdown('### アップロードファイル(dataframe）')
-df
+    # meal_data = df[df['分類'] == '食事']
 
-# meal_data = df[df['分類'] == '食事']
+    st.markdown('### 日付ごとのミルク量の推移')  # （日付ごとにグルーピングして棒グラフにしたい）
+    # グラフの描画
+    fig, ax = plt.subplots()
+    ax.plot(df['日付'], df['ミルク量'], marker='o')
+    ax.set_title('Milk Volume Over Time')
+    ax.set_xlabel('date')
+    ax.set_ylabel('milk(ml)')
+    st.pyplot(fig)
 
-st.markdown('### 日付ごとのミルク量の推移')（日付ごとにグルーピングして棒グラフにしたい）
-# グラフの描画
-fig, ax = plt.subplots()
-ax.plot(df['日付'], df['ミルク量'], marker='o')
-ax.set_title('Milk Volume Over Time')
-ax.set_xlabel('date')
-ax.set_ylabel('milk(ml)')
-st.pyplot(fig)
-
-st.markdown('### 時間帯とミルク量のヒートマップ')
-# グラフの描画
-meal_data = df[df['分類'] == '食事']
-df['Hour'] = pd.to_datetime(meal_data['日時']).dt.hour
-# ミルク量の範囲を定義
-bins = [100, 120, 140, 160, 180, 200, float('inf')]
-labels = ['100-119', '120-139', '140-159', '160-179', '180-199', '200+']
-df['Amount Range'] = pd.cut(df['ミルク量'], bins=bins, labels=labels, right=False)
-# 集計
-heatmap_data = df.groupby(['Amount Range', 'Hour']).size().unstack().fillna(0)
-# ヒートマップの作成
-fig, ax = plt.subplots()
-sns.heatmap(heatmap_data, annot=True, cmap='coolwarm', ax=ax)
-ax.set_title('Heatmap of Milk Consumption by Hour and Amount Range')
-ax.set_ylabel('Milk Amount Range')
-ax.set_xlabel('Hour of Day')
-st.pyplot(fig)
+    st.markdown('### 時間帯とミルク量のヒートマップ')
+    # グラフの描画
+    meal_data = df[df['分類'] == '食事']
+    df['Hour'] = pd.to_datetime(meal_data['日時']).dt.hour
+    # ミルク量の範囲を定義
+    bins = [100, 120, 140, 160, 180, 200, float('inf')]
+    labels = ['100-119', '120-139', '140-159', '160-179', '180-199', '200+']
+    df['Amount Range'] = pd.cut(df['ミルク量'], bins=bins, labels=labels, right=False)
+    # 集計
+    heatmap_data = df.groupby(['Amount Range', 'Hour']).size().unstack().fillna(0)
+    # ヒートマップの作成
+    fig, ax = plt.subplots()
+    sns.heatmap(heatmap_data, annot=True, cmap='coolwarm', ax=ax)
+    ax.set_title('Heatmap of Milk Consumption by Hour and Amount Range')
+    ax.set_ylabel('Milk Amount Range')
+    ax.set_xlabel('Hour of Day')
+    st.pyplot(fig)

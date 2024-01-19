@@ -9,12 +9,7 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from io import StringIO
 
-st.title("hello world")
-x = 10
-x
-
-df = pd.DataFrame({'col1': [1,2,3]})
-df
+st.title("ぴよログダッシュボード")
 
 # 対象データをリスト化
 def get_piyolog_all_items(data):
@@ -75,11 +70,11 @@ def get_piyolog_all_items(data):
 
 # 対象項目
 def check_item(text):
-    if re.findall('起きる|寝る|母乳|ミルク|離乳食|搾母乳', text) and re.match(r'([01][0-9]|2[0-3]):[0-5][0-9]', text):
+    if re.findall('起きる|寝る|母乳|ミルク|離乳食|おしっこ|うんち|お風呂', text) and re.match(r'([01][0-9]|2[0-3]):[0-5][0-9]', text):
         return True
     return False
 
-uploaded_file = st.file_uploader("ログをアップロードしてください。")
+uploaded_file = st.file_uploader("1ヶ月分のログをアップロードしてください。")
 if uploaded_file is not None:
     st.balloons()
     
@@ -89,14 +84,12 @@ if uploaded_file is not None:
 
     # To read file as string:
     string_data = stringio.read()
-    # st.markdown('### アップロードファイル（先頭1000文字）')
-    # st.write(string_data[:1000])
+    st.markdown('### アップロードファイル（先頭1000文字）')
+    st.write(string_data[:1000])
 
     df = pd.DataFrame(get_piyolog_all_items(string_data),columns=['日付','日時','分類','項目','ミルク量'])
     st.markdown('### アップロードファイル')
     df
-
-    # meal_data = df[df['分類'] == '食事']
 
     st.markdown('### 日付ごとのミルク量の推移')  # （日付ごとにグルーピングして棒グラフにしたい）
     # グラフの描画

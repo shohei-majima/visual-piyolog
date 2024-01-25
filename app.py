@@ -24,7 +24,7 @@ def get_piyolog_all_items(data):
         # 日付取得（月次データ）
         if item == '----------' and index < len(array) - 1:
             day = array[index + 1][:-3] # 曜日「（月）など」の末尾3文字を除く文字列を抽出
-            day_date = datetime.datetime.strptime(day, '%Y/%m/%d').strftime("%-d")
+            day_date = int(datetime.datetime.strptime(day, '%Y/%m/%d').strftime("%-d"))
 
         # 対象項目の場合
         if item != '' and check_item(item):
@@ -81,39 +81,41 @@ with st.sidebar:
         st.code(string_data[:1000])
 
 if uploaded_file is not None:
+    # ふうせん
     st.balloons()
-    
-    # To convert to a string based IO:
+
+    # ファイルを読み込み
     stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-    # stringio = open("sample_file.txt", "r", encoding="utf-8")  # ローカルのサンプルファイル
-
-    # To read file as string:
+    # stringio = open("sample_file.txt", "r", encoding="utf-8")  # サンプルファイルを使用
     string_data = stringio.read()
-
     df = pd.DataFrame(get_piyolog_all_items(string_data),columns=['日付','日時','分類','項目','ミルク量'])
-    st.markdown('### アップロードファイル')
-    df
+    
+    # アップロードファイルを表示
+    with st.expander("アップロードファイル（.csv）", expanded=False):
+        df
 
-    st.markdown('### 1回ごとのミルク量の推移') 
-    # グラフの描画
+    left_column, right_column = st.columns(2)
+
+    # グラフ表示領域
     fig, ax = plt.subplots()
     meal_data = df[df['分類'] == '食事']
-    ax.plot(meal_data['日付'], meal_data['ミルク量'])
+    ax.plot(meal_data['日付'], meal_data['ミルク量'], color="darksalmon")
     ax.set_title('Milk Amount Over Time')
     ax.set_xlabel('date')
     ax.set_ylabel('milk(ml)')
-    st.pyplot(fig)
+    left_column.subheader('1回ごとのミルク量推移')
+    left_column.pyplot(fig)
 
-    st.markdown('### 日ごとのミルク量の推移')
+    fig, ax = plt.subplots()
     amount_per_date = meal_data.groupby('日付').agg({'ミルク量': np.sum})
-    ax.bar(amount_per_date.index, amount_per_date['ミルク量'])
+    ax.bar(amount_per_date.index, amount_per_date['ミルク量'], color="darksalmon")
     ax.set_title('Milk Amount Per Date')
     ax.set_xlabel('date')
     ax.set_ylabel('milk(ml)')
-    st.pyplot(fig)
+    right_column.subheader('1日あたりのミルク量')
+    right_column.pyplot(fig)
 
     st.markdown('### 時間帯とミルク量のヒートマップ')
-    # グラフの描画
     df['Hour'] = pd.to_datetime(meal_data['日時']).dt.hour
     # ミルク量の範囲を定義
     bins = [100, 120, 140, 160, 180, 200, float('inf')]
@@ -128,3 +130,25 @@ if uploaded_file is not None:
     ax.set_ylabel('Milk Amount Range')
     ax.set_xlabel('Hour of Day')
     st.pyplot(fig)
+
+    left_column, right_column = st.columns(2)
+    fig, ax = plt.subplots()
+    pee_data = df[df['項目'] == 'おしっこ']
+    pee_count_per_date = pee_data.groupby('日付').count()
+    ax.bar(pee_count_per_date.index, pee_count_per_date['項目'], color="turquoise")
+    ax.set_title('Pee Frequency Per Date')
+    ax.set_xlabel('date')
+    ax.set_ylabel('count')    
+    left_column.subheader('1日あたりのPee回数')
+    left_column.pyplot(fig)
+    # st.pyplot(fig)
+
+    fig, ax = plt.subplots()
+    poop_data = df[df['項目'] == 'うんち']
+    poop_count_per_date = poop_data.groupby('日付').count()
+    ax.bar(poop_count_per_date.index, poop_count_per_date['項目'], color="chocolate")
+    ax.set_title('Poop Frequency Per Date')
+    ax.set_xlabel('date')
+    ax.set_ylabel('count')
+    right_column.subheader('1日あたりのPoop回数')
+    right_column.pyplot(fig)

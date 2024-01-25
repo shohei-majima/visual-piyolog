@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import re
 import datetime
-from datetime import timedelta
-from dateutil.relativedelta import relativedelta
 from io import StringIO
 
 st.title("ぴよログダッシュボード")

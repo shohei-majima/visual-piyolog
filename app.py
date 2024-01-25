@@ -74,7 +74,14 @@ def check_item(text):
         return True
     return False
 
-uploaded_file = st.file_uploader("1ヶ月分のログをアップロードしてください。")
+with st.sidebar:
+    uploaded_file = st.file_uploader("1ヶ月分のログをアップロードしてください。")
+    if uploaded_file is not None:
+        stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+        string_data = stringio.read()
+        st.markdown('### アップロードファイル（先頭1000文字）')
+        st.code(string_data[:1000])
+
 if uploaded_file is not None:
     st.balloons()
     
@@ -84,30 +91,36 @@ if uploaded_file is not None:
 
     # To read file as string:
     string_data = stringio.read()
-    st.markdown('### アップロードファイル（先頭1000文字）')
-    st.write(string_data[:1000])
 
     df = pd.DataFrame(get_piyolog_all_items(string_data),columns=['日付','日時','分類','項目','ミルク量'])
     st.markdown('### アップロードファイル')
     df
 
-    st.markdown('### 日付ごとのミルク量の推移')  # （日付ごとにグルーピングして棒グラフにしたい）
+    st.markdown('### 1回ごとのミルク量の推移') 
     # グラフの描画
     fig, ax = plt.subplots()
-    ax.plot(df['日付'], df['ミルク量'], marker='o')
-    ax.set_title('Milk Volume Over Time')
+    meal_data = df[df['分類'] == '食事']
+    ax.plot(meal_data['日付'], meal_data['ミルク量'])
+    ax.set_title('Milk Amount Over Time')
+    ax.set_xlabel('date')
+    ax.set_ylabel('milk(ml)')
+    st.pyplot(fig)
+
+    st.markdown('### 日ごとのミルク量の推移')
+    amount_per_date = meal_data.groupby('日付').agg({'ミルク量': np.sum})
+    ax.bar(amount_per_date.index, amount_per_date['ミルク量'])
+    ax.set_title('Milk Amount Per Date')
     ax.set_xlabel('date')
     ax.set_ylabel('milk(ml)')
     st.pyplot(fig)
 
     st.markdown('### 時間帯とミルク量のヒートマップ')
     # グラフの描画
-    meal_data = df[df['分類'] == '食事']
     df['Hour'] = pd.to_datetime(meal_data['日時']).dt.hour
     # ミルク量の範囲を定義
     bins = [100, 120, 140, 160, 180, 200, float('inf')]
     labels = ['100-119', '120-139', '140-159', '160-179', '180-199', '200+']
-    df['Amount Range'] = pd.cut(df['ミルク量'], bins=bins, labels=labels, right=False)
+    df['Amount Range'] = pd.cut(meal_data['ミルク量'], bins=bins, labels=labels, right=False)
     # 集計
     heatmap_data = df.groupby(['Amount Range', 'Hour']).size().unstack().fillna(0)
     # ヒートマップの作成
